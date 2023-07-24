@@ -25,7 +25,7 @@ def get_room_description(room_name, file):
         input={
             "image": f"data:image/jpeg;base64,{encoded_image}",
             "prompt": f'This is a {room_name}. Describe it like a realtor would for a listing description. As a rule, do not mention things that do not stay with a home when it is typically sold, like beds, fans, TVs, chairs/barstools, and couches etc. Focus on the {room_name} and house itself.',
-            "temperature": 2
+            "temperature": 1.33
         }
     )
     return result 
@@ -58,7 +58,7 @@ def summarize_all(text):
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     max_tokens=500,
-    temperature=1.5,
+    temperature=1.33,
     top_p=0.9,
     frequency_penalty=0.5,
     messages=[
