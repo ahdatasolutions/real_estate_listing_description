@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Listing Description Generator</title>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</head>
+<body>
+    <h1>Welcome, {{ current_user.username }}</h1>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <form id="house-form" action="/" method="post" enctype="multipart/form-data">
+        <div id="rooms">
+            <!-- Empty div where rooms will be added -->
+        </div>
+        <button type="button" onclick="addRoom()">Add Room</button><br>
+        <input type="submit" value="Generate Description">
+    </form>
+</body>
+</html>
