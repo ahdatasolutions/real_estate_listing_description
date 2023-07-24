@@ -49,8 +49,7 @@ def summarize(text):
         },
         {
           "role": "user",
-          "content": f"Summarize this description of this house like you would a real estate listing.  You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the rules to follow:
-                Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Here is the description to summarize: {text}",
+          "content": f"Summarize this description of this house like you would a real estate listing.  You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the rules to follow: Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Here is the description to summarize: {text}",
         },
     ],)
     return response.choices[0].message['content']
