@@ -24,7 +24,7 @@ def get_room_description(room_name, file):
         "daanelson/minigpt-4:b96a2f33cc8e4b0aa23eacfce731b9c41a7d9466d9ed4e167375587b54db9423",
         input={
             "image": f"data:image/jpeg;base64,{encoded_image}",
-            "prompt": f'This is a {room_name}. Describe it like a realtor would for a listing description. As a rule, do not mention things that do not stay with a home when it is typically sold, like beds, fans, TVs, chairs/barstools, and couches etc. Focus on the {room_name} and house itself. You are not allowed to talk about things that do not typically come with a home when it is sold. Describe it like a realtor would for a listing description.',
+            "prompt": f'This is a {room_name}. Describe it like a realtor would for a listing description. As a rule, do not mention things that do not stay with a home when it is typically sold, like beds, fans, TVs, chairs/barstools, and couches etc. Focus on the {room_name} and house itself. Here are the rules to follow: Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Describe it like a realtor would for a listing description.',
             "temperature": 1.33,
             "num_beams" : 8
         }
@@ -49,7 +49,8 @@ def summarize(text):
         },
         {
           "role": "user",
-          "content": f"Summarize this description of this house like you would a real estate listing. Focus on the more important aspects like the master bedroom/bathroom, kitchen, and the overall appearance. As a rule, focus on the space and house itself. Do not mention things that do not stay with a home when it is typically sold, like beds, TVs, chairs/barstools, and couches. Here is the description: {text}",
+          "content": f"Summarize this description of this house like you would a real estate listing.  You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the rules to follow:
+                Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Here is the description to summarize: {text}",
         },
     ],)
     return response.choices[0].message['content']
@@ -57,7 +58,7 @@ def summarize(text):
 
 def summarize_all(text):
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-3.5-turbo-16k-0613",
         max_tokens=500,
         temperature=1.33,
         top_p=0.9,
@@ -69,7 +70,8 @@ def summarize_all(text):
             },
             {
                 "role": "user",
-                "content": f"Summarize these summaries of this house like you would a real estate listing for a realtor. Focus on the more important aspects like the master bedroom/bathroom, kitchen, and the overall appearance. As a rule, you are not allowed to mention things that do not stay with a home when it is typically sold, like beds, TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement, location, neighborhood, or roofs. You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the descriptions: {text}",
+                "content": f"Summarize these summaries of this house like you would a real estate listing for a realtor. You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the rules to follow:
+                Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Here are the descriptions: {text}",
             },
         ],
     )
