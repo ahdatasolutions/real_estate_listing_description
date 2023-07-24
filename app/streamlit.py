@@ -39,7 +39,7 @@ def summarize(text):
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     max_tokens=500,
-    temperature=2,
+    temperature=1.33,
     top_p=0.9,
     frequency_penalty=0.5,
     messages=[
@@ -57,22 +57,23 @@ def summarize(text):
 
 def summarize_all(text):
     response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    max_tokens=500,
-    temperature=1.33,
-    top_p=0.9,
-    frequency_penalty=0.5,
-    messages=[
-        {
-          "role": "system",
-          "content": "You are a helpful assistant for text summarization for listing descriptions for a realtor.",
-        },
-        {
-          "role": "user",
-          "content": f"Summarize these summaries of this house like you would a real estate listing for a realtor. Focus on the more important aspects like the master bedroom/bathroom, kitchen, and the overall appearance. As a rule, focus on the space and house itself. Do not mention things that do not stay with a home when it is typically sold, like beds, TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. You are not allowed to talk about things that do not typically come with a home when it is sold. Here are the descriptions: {text}",
-        },
-    ],)
-    return response.choices[0].message['content']
+        model="gpt-3.5-turbo",
+        max_tokens=500,
+        temperature=1.33,
+        top_p=0.9,
+        frequency_penalty=0.5,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant for text summarization for listing descriptions for a realtor.",
+            },
+            {
+                "role": "user",
+                "content": f"Summarize these summaries of this house like you would a real estate listing for a realtor. Focus on the more important aspects like the master bedroom/bathroom, kitchen, and the overall appearance. As a rule, you are not allowed to mention things that do not stay with a home when it is typically sold, like beds, TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement, location, neighborhood, or roofs. You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the descriptions: {text}",
+            },
+        ],
+    )
+    return response.choices[0].message["content"]
 
 def chunk_list(lst, n):
     """Yield successive n-sized chunks from lst."""
