@@ -24,9 +24,10 @@ def get_room_description(room_name, file):
         "daanelson/minigpt-4:b96a2f33cc8e4b0aa23eacfce731b9c41a7d9466d9ed4e167375587b54db9423",
         input={
             "image": f"data:image/jpeg;base64,{encoded_image}",
-            "prompt": f'This is a {room_name}. Describe it like a realtor would for a listing description. As a rule, do not mention things that do not stay with a home when it is typically sold, like beds, fans, TVs, chairs/barstools, and couches etc. Focus on the {room_name} and house itself. Here are the rules to follow: Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Describe it like a realtor would for a listing description.',
+            "prompt": f"This is a {room_name}. Describe it like a realtor would for a listing description. Please emphasize the room's layout, lighting, storage options, and atmosphere. Do not include any references to TVs, beds, tables, chairs, sofas, or any other furniture items. in the description.",
             "temperature": 1.33,
-            "num_beams" : 8
+            "num_beams" : 1,
+            "repetition" : 2
         }
     )
     return result 
@@ -39,17 +40,17 @@ def summarize(text):
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
     max_tokens=500,
-    temperature=1.33,
-    top_p=0.9,
-    frequency_penalty=0.5,
+    temperature=1.5,
+    top_p=0.65,
+    frequency_penalty=1.5,
     messages=[
         {
           "role": "system",
-          "content": "You are a helpful assistant for text summarization for listing descriptions for a realtor. As a rule, focus on the space and house itself. Do not mention things that do not stay with a home when it is typically sold, like beds, TVs, chairs/barstools, and couches. You are not allowed to talk about things that do not typically come with a home when it is sold.",
+          "content": "You are a helpful assistant for text summarization.",
         },
         {
           "role": "user",
-          "content": f"Summarize this description of this house like you would a real estate listing.  You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the rules to follow: Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Here is the description to summarize: {text}",
+          "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the description and then Summarize this description of this house like you would a real estate listing. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. Do not mention in the summary that you removed the TVs, beds, tables, chairs, sofas, or any other furniture items. You only need to remove them. Here is the description to summarize: {text}",
         },
     ],)
     return response.choices[0].message['content']
@@ -58,18 +59,18 @@ def summarize(text):
 def summarize_all(text):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-16k-0613",
-        max_tokens=500,
-        temperature=1.33,
-        top_p=0.9,
-        frequency_penalty=0.5,
+        max_tokens=750,
+        temperature=1.25,
+        top_p=0.75,
+        frequency_penalty=1.25,
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant for text summarization for listing descriptions for a realtor.",
+                "content": "You are a helpful assistant for text summarization.",
             },
             {
                 "role": "user",
-                "content": f"Summarize these summaries of this house like you would a real estate listing for a realtor. You are not allowed to talk about things that do not typically come with a home when it is sold. Stick to the provided details. Here are the rules to follow: Avoid mentioning items that do not stay with the house when it is bought, such as beds, TVs, chairs/barstools, and couches. Do not discuss house placement, location, neighborhood, or roofs. Here are the descriptions: {text}",
+                "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the descriptions and then Summarize these description of the rooms of this house like you would a real estate listing. Please emphasize the room's layout, lighting, storage options, and atmosphere. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. Do not mention in the summary that you removed the TVs, beds, tables, chairs, sofas, or any other furniture items. You only need to remove them. Here are the descriptions: {text}",
             },
         ],
     )
@@ -91,7 +92,7 @@ def main():
     with col2:
         beds = st.number_input('Number of Beds', min_value=0, step=1)
     with col3:
-        baths = st.number_input('Number of Baths', min_value=0, step=1)
+        baths = st.number_input('Number of Baths', min_value=0.0, step=.5)
     with col4:
         misc_rooms = st.number_input('Miscellaneous Rooms', min_value=0, step=1)
     with col5:
@@ -120,7 +121,7 @@ def main():
         if st.button('Generate Descriptions', key='generate'):
             output_dataframe = pd.DataFrame(columns=['DateTime', 'Address', 'Beds', 'Baths', 'Misc Rooms', 'Sqft', 'Room Name', 'Description', 'Time Taken', 'Summaries', 'Summary2', 'Summary3', 'Overall Summary'])
             house_details = f'House details: {beds}, {baths}, {sqft}. House Description: '
-            task = 'The following is a description of a house. Summarize it like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. You are not allowed to talk about things that do not typically come with a home when it is sold. Here are the details:' 
+            task = 'The following is a description of a house. Summarize it like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. Here are the details:' 
             prompt = task + house_details  # initialize 'prompt' here
             for room_name, room_file in zip(room_names, images):
                 start_time = time.time()
