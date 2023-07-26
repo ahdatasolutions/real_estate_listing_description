@@ -39,7 +39,7 @@ openai.api_key = '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'
 def summarize(text):
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
-    max_tokens=500,
+    max_tokens=750,
     temperature=1.5,
     top_p=0.65,
     frequency_penalty=1.5,
@@ -50,7 +50,7 @@ def summarize(text):
         },
         {
           "role": "user",
-          "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the description and then Summarize this description of this house like you would a real estate listing. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. Do not mention in the summary that you removed the TVs, beds, tables, chairs, sofas, or any other furniture items. You only need to remove them. Here is the description to summarize: {text}",
+          "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the description and then Summarize this description of this house like you would a real estate listing. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. Do not mention in the summary that you removed the TVs, beds, tables, chairs, sofas, or any other furniture items You only need to remove them and do not mention it. Here is the description to summarize: {text}",
         },
     ],)
     return response.choices[0].message['content']
@@ -59,10 +59,10 @@ def summarize(text):
 def summarize_all(text):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo-16k-0613",
-        max_tokens=750,
+        max_tokens=1000,
         temperature=1.25,
         top_p=0.75,
-        frequency_penalty=1.25,
+        frequency_penalty=1.5,
         messages=[
             {
                 "role": "system",
@@ -70,7 +70,7 @@ def summarize_all(text):
             },
             {
                 "role": "user",
-                "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the descriptions and then Summarize these description of the rooms of this house like you would a real estate listing. Please emphasize the room's layout, lighting, storage options, and atmosphere. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. Do not mention in the summary that you removed the TVs, beds, tables, chairs, sofas, or any other furniture items. You only need to remove them. Here are the descriptions: {text}",
+                "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the descriptions and then Summarize these description of the rooms of this house like you would a real estate listing. Please emphasize the room's layout, lighting, storage options, and atmosphere. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. You only need to remove them and do not mention it. Here are the descriptions: {text}",
             },
         ],
     )
@@ -121,7 +121,7 @@ def main():
         if st.button('Generate Descriptions', key='generate'):
             output_dataframe = pd.DataFrame(columns=['DateTime', 'Address', 'Beds', 'Baths', 'Misc Rooms', 'Sqft', 'Room Name', 'Description', 'Time Taken', 'Summaries', 'Summary2', 'Summary3', 'Overall Summary'])
             house_details = f'House details: {beds}, {baths}, {sqft}. House Description: '
-            task = 'The following is a description of a house. Summarize it like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. Here are the details:' 
+            task = 'The following are 3 descriptions of a house. Summarize them into one like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. Only return your summarization. Here are the descriptions:' 
             prompt = task + house_details  # initialize 'prompt' here
             for room_name, room_file in zip(room_names, images):
                 start_time = time.time()
