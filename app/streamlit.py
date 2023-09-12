@@ -8,6 +8,8 @@ import re
 import replicate  # Make sure you have this installed
 import openai
 from datetime import datetime
+import tiktoken
+
 
 st.set_page_config(layout = "wide")
 def clean_room_name(name):
@@ -35,11 +37,11 @@ def chunk_list(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-openai.api_key = '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'
+openai_key = os.getenv('OPENAI_API_KEY')
 def summarize(text):
     response = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    max_tokens=750,
+    model="gpt-4",
+    max_tokens=int(len(enc.encode(text))*1.5),
     temperature=1.5,
     top_p=0.65,
     frequency_penalty=1.5,
@@ -50,31 +52,31 @@ def summarize(text):
         },
         {
           "role": "user",
-          "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the description and then Summarize this description of this house like you would a real estate listing. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. Do not mention in the summary that you removed the TVs, beds, tables, chairs, sofas, or any other furniture items You only need to remove them and do not mention it. Here is the description to summarize: {text}",
+          "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the description and then Summarize this description of this house like you would a real estate listing. Here is the description to summarize: {text}",
         },
     ],)
     return response.choices[0].message['content']
 
-
 def summarize_all(text):
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-16k-0613",
-        max_tokens=1000,
-        temperature=1.25,
-        top_p=0.75,
-        frequency_penalty=1.5,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful assistant for text summarization.",
-            },
-            {
-                "role": "user",
-                "content": f"Remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items in the descriptions and then Summarize these description of the rooms of this house like you would a real estate listing. Please emphasize the room's layout, lighting, storage options, and atmosphere. When you are done summarzing you need to remove all references to TVs, beds, tables, chairs, sofas, or any other furniture items from the final description. You only need to remove them and do not mention it. Here are the descriptions: {text}",
-            },
-        ],
-    )
-    return response.choices[0].message["content"]
+    model="gpt-4",
+    max_tokens=int(len(enc.encode(text))*1.5),
+    temperature=1.5,
+    top_p=0.9,
+    frequency_penalty=0.5,
+    messages=[
+        {
+          "role": "system",
+          "content": "You are a helpful assistant for text summarization for listing descriptions for a realtor.",
+        },
+        {
+          "role": "user",
+          "content": f"Summarize these summaries of this house like you would a real estate listing for a realtor. Focus on the more important aspects like the master bedroom/bathroom, kitchen, and the overall appearance. As a rule, focus on the space and house itself. Do not mention things that do not stay with a home when it is typically sold, like beds, TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. Here are the descriptions: {text}",
+        },
+    ],)
+    return response.choices[0].message['content']
+
+enc = tiktoken.encoding_for_model('gpt-4')
 
 def chunk_list(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -121,7 +123,7 @@ def main():
         if st.button('Generate Descriptions', key='generate'):
             output_dataframe = pd.DataFrame(columns=['DateTime', 'Address', 'Beds', 'Baths', 'Misc Rooms', 'Sqft', 'Room Name', 'Description', 'Time Taken', 'Summaries', 'Summary2', 'Summary3', 'Overall Summary'])
             house_details = f'House details: {beds}, {baths}, {sqft}. House Description: '
-            task = 'The following are 3 descriptions of a house. Summarize them into one like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, and couches. Another rule, do not mention anything about house placement or roofs. Only return your summarization. Here are the descriptions:' 
+            task = 'The following are descriptions of rooms of a house. Summarize them into one listing description like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, couches, and other furniture. Another rule, do not mention anything about house placement or roofs. Only return your summarization. Here are the descriptions:' 
             prompt = task + house_details  # initialize 'prompt' here
             for room_name, room_file in zip(room_names, images):
                 start_time = time.time()
@@ -156,14 +158,12 @@ def main():
                 'Room Name': room_name,
                 'Description': room_description,
                 'Time Taken': time_taken,
-                'Summaries': summary,
-                'Summary2': summary2,
-                'Summary3': summary3,
-                'Overall Summary': summary_all
-            }
+                'Summary': summary}
             output_dataframe.loc[len(output_dataframe)] = row_data
+            output_dataframe['input_tokens'] = input_tokens
+            output_dataframe['output_tokens'] = output_tokens
 
-            with st.expander("See Summaries"):
+           with st.expander("See Summaries"):
                 st.markdown("## Summaries")
                 st.markdown("### Choose Between 3 Generated Summaries")
                 col1, col2, col3 = st.columns(3)
