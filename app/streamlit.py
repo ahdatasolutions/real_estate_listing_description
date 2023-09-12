@@ -8,7 +8,7 @@ import re
 import replicate  # Make sure you have this installed
 import openai
 from datetime import datetime
-import tiktoken
+#import tiktoken
 
 
 st.set_page_config(layout = "wide")
@@ -41,7 +41,7 @@ openai_key = os.getenv('OPENAI_API_KEY')
 def summarize(text):
     response = openai.ChatCompletion.create(
     model="gpt-4",
-    max_tokens=int(len(enc.encode(text))*1.5),
+    max_tokens=3000,
     temperature=1.5,
     top_p=0.65,
     frequency_penalty=1.5,
@@ -60,7 +60,7 @@ def summarize(text):
 def summarize_all(text):
     response = openai.ChatCompletion.create(
     model="gpt-4",
-    max_tokens=int(len(enc.encode(text))*1.5),
+    max_tokens=3000,
     temperature=1.5,
     top_p=0.9,
     frequency_penalty=0.5,
@@ -76,7 +76,7 @@ def summarize_all(text):
     ],)
     return response.choices[0].message['content']
 
-enc = tiktoken.encoding_for_model('gpt-4')
+#enc = tiktoken.encoding_for_model('gpt-4')
 
 def chunk_list(lst, n):
     """Yield successive n-sized chunks from lst."""
