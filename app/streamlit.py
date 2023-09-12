@@ -105,23 +105,16 @@ def main():
     room_names = [name.strip() for name in room_names_input.split(',')] if room_names_input else []
 
     images = []
-    upload_rooms = []
     for room_name in room_names:
-        upload_rooms.append(room_name)
-        if len(upload_rooms) == 4 or room_name == room_names[-1]:
-            cols = st.columns(len(upload_rooms))
-            for i, room_name in enumerate(upload_rooms):
-                with cols[i]:
-                    room_file = st.file_uploader(f"Upload image for {room_name}", type=['png', 'jpg', 'jpeg'])
-                    if room_file:
-                        st.image(room_file.read())
-                        room_file.seek(0)  # Resets the file cursor back to the start
-                    images.append(room_file)
-            upload_rooms = []
+        room_file = st.file_uploader(f"Upload image for {room_name}", type=['png', 'jpg', 'jpeg'])
+        if room_file:
+            st.image(room_file.read())
+            room_file.seek(0)  # Resets the file cursor back to the start
+        images.append(room_file)
 
     if room_names and all(images):
         if st.button('Generate Descriptions', key='generate'):
-            output_dataframe = pd.DataFrame(columns=['DateTime', 'Address', 'Beds', 'Baths', 'Misc Rooms', 'Sqft', 'Room Name', 'Description', 'Time Taken', 'Summaries', 'Summary2', 'Summary3', 'Overall Summary'])
+            output_dataframe = pd.DataFrame(columns=['DateTime', 'Address', 'Beds', 'Baths', 'Misc Rooms', 'Sqft', 'Room Name', 'Description', 'Time Taken', 'Summary', 'Summary2', 'Summary3', 'Overall Summary'])
             house_details = f'House details: {beds}, {baths}, {sqft}. House Description: '
             task = 'The following are descriptions of rooms of a house. Summarize them into one listing description like you would if you were a realtor making a listing description. As a rule, Do not mention things that do not stay with a home when it is typically sold, like TVs, chairs/barstools, couches, and other furniture. Another rule, do not mention anything about house placement or roofs. Only return your summarization. Here are the descriptions:' 
             prompt = task + house_details  # initialize 'prompt' here
@@ -140,9 +133,8 @@ def main():
             start_time_summary = time.time()
             summary = summarize(prompt)
             summary2 = summarize(prompt)
-            summary3= summarize(prompt)
-            summaries = summary+summary2+summary3
-            summary_all = summarize_all(task+summaries)
+            summary3 = summarize(prompt)
+            summary_all = summarize_all(task + summary + summary2 + summary3)
             end_time_summary = time.time()
             time_taken_summary = end_time_summary - start_time_summary
             st.write(f'Done generating summary in {np.round(time_taken_summary,2)} seconds')
@@ -158,12 +150,14 @@ def main():
                 'Room Name': room_name,
                 'Description': room_description,
                 'Time Taken': time_taken,
-                'Summary': summary}
+                'Summary': summary,
+                'Summary2': summary2,
+                'Summary3': summary3,
+                'Overall Summary': summary_all
+            }
             output_dataframe.loc[len(output_dataframe)] = row_data
-            output_dataframe['input_tokens'] = input_tokens
-            output_dataframe['output_tokens'] = output_tokens
 
-           with st.expander("See Summaries"):
+            with st.expander("See Summaries"):
                 st.markdown("## Summaries")
                 st.markdown("### Choose Between 3 Generated Summaries")
                 col1, col2, col3 = st.columns(3)
@@ -180,12 +174,12 @@ def main():
             # Add a download link
             csv = convert_df(output_dataframe)
             st.download_button(
-           "Press to Download",
-           csv,
-           f"{address}.csv",
-           "text/csv",
-           key='download-csv'
-        )
+               "Press to Download",
+               csv,
+               f"{address}.csv",
+               "text/csv",
+               key='download-csv'
+            )
         else:
             st.write('Please upload an image for each room.')
     else:
