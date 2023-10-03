@@ -37,7 +37,10 @@ def chunk_list(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
-openai_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+OPENAI_API_KEY=st.secrets["OPENAI_API_KEY"]
+openai_key = st.secrets["OPENAI_API_KEY"]
+os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 def summarize(text):
     response = openai.ChatCompletion.create(
     model="gpt-4",

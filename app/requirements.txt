@@ -2,5 +2,6 @@ streamlit
 pandas
 numpy
 replicate
+scikit-learn
 openai
 tiktoken
